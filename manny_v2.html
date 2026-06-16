@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MANNY — Art Wear</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="config.js"></script>
+<script src="products.js"></script>
+<script>
+  const SUPABASE_URL = 'https://erjrvwrqujuzmxtkhvrw.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_o2woVUsiumTBfeHTIuJlEQ_l1k57h0R';
+  const TIENDA_ID = 'manny';
+
+  async function sbFetch(path, options = {}) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      ...options,
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation', ...options.headers }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+  async function sbGuardarConfig(data) {
+    return sbFetch('config?id=eq.' + TIENDA_ID, { method: 'PATCH', body: JSON.stringify({ data, updated_at: new Date().toISOString() }) })
+      .catch(() => sbFetch('config', { method: 'POST', body: JSON.stringify({ id: TIENDA_ID, data }) }));
+  }
+  async function sbCargarConfig() {
+    const r = await sbFetch('config?id=eq.' + TIENDA_ID + '&select=data');
+    return r?.[0]?.data || null;
+  }
+  async function sbGuardarProductos(productos) {
+    await sbFetch('productos?tienda_id=eq.' + TIENDA_ID, { method: 'DELETE' });
+    if (!productos.length) return;
+    return sbFetch('productos', { method: 'POST', body: JSON.stringify(productos.map(p => ({ id: TIENDA_ID + '_' + p.id, tienda_id: TIENDA_ID, data: p }))) });
+  }
+  async function sbCargarProductos() {
+    const r = await sbFetch('productos?tienda_id=eq.' + TIENDA_ID + '&select=data');
+    return r?.map(x => x.data) || [];
+  }
+</script>
+
+<script>
+  const _sc = localStorage.getItem('manny_config');
+  const ac = _sc ? JSON.parse(_sc) : (window.STORE_CONFIG || {});
+  const col = ac.colors || {};
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Cinzel Decorative', 'serif'],
+          cinzel: ['Cinzel', 'serif'],
+          sans: ['Jost', 'sans-serif']
+        },
+        colors: {
+          mPrimary: col.primary || '#0A0A0A',
+          mAccent: col.accent || '#8B1A1A',
+          mGold: col.gold || '#C9A84C',
+          mSilver: col.silver || '#B8B8C8',
+          mCream: col.cream || '#E8D5B0',
+          mSurface: col.surface || '#141414',
+          mText: col.textMain || '#F5F0E8',
+          mMuted: col.textMuted || '#8A8580'
+        }
+      }
+    }
+  };
+</script>
+
+<style>
+  body { font-family: 'Jost', sans-serif; background: #0A0A0A; }
+  .font-display { font-family: 'Cinzel Decorative', serif; }
+  .font-cinzel { font-family: 'Cinzel', serif; }
+  [x-cloak] { display: none !important; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .smooth { transition: all 0.3s ease; }
+
+  /* Sparkle / brillo de piedras */
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+  }
+  @keyframes sparkle2 {
+    0%, 100% { opacity: 0; transform: scale(0.3) rotate(45deg); }
+    60% { opacity: 0.9; transform: scale(1) rotate(225deg); }
+  }
+  .sparkle { animation: sparkle 2.5s ease-in-out infinite; }
+  .sparkle-2 { animation: sparkle2 3.2s ease-in-out infinite; }
+  .sparkle-3 { animation: sparkle 4s ease-in-out 0.8s infinite; }
+  .sparkle-4 { animation: sparkle2 2.8s ease-in-out 1.2s infinite; }
+  .sparkle-5 { animation: sparkle 3.5s ease-in-out 0.4s infinite; }
+
+  /* Textura noise sutil */
+  .noise-bg {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  /* Gold shimmer en texto */
+  @keyframes goldShimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .gold-text {
+    background: linear-gradient(90deg, #C9A84C 0%, #F0D080 40%, #C9A84C 60%, #A07830 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: goldShimmer 4s linear infinite;
+  }
+
+  .gold-line { height: 1px; background: linear-gradient(to right, transparent, #C9A84C 30%, #F0D080 50%, #C9A84C 70%, transparent); }
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* Card hover glow */
+  .card-dark {
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    transition: all 0.35s ease;
+  }
+  .card-dark:hover {
+    border-color: #C9A84C;
+    box-shadow: 0 0 30px rgba(201,168,76,0.12), 0 20px 40px rgba(0,0,0,0.6);
+    transform: translateY(-4px);
+  }
+
+  /* Brillo badge */
+  .brillo-badge {
+    background: linear-gradient(135deg, #B8B8C8, #F0F0FF, #B8B8C8);
+    color: #141414;
+  }
+
+  /* Piedras y diamantes cayendo */
+  @keyframes diamondFall {
+    0%   { transform: translateY(-30px) rotate(0deg) translateX(0); opacity:0; }
+    10%  { opacity:0.8; }
+    85%  { opacity:0.5; }
+    100% { transform: translateY(100vh) rotate(360deg) translateX(50px); opacity:0; }
+  }
+  @keyframes diamondFloat {
+    0%   { transform: translateY(-20px) rotate(45deg) translateX(0); opacity:0; }
+    15%  { opacity:0.7; }
+    85%  { opacity:0.4; }
+    100% { transform: translateY(100vh) rotate(-270deg) translateX(-40px); opacity:0; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .gem-fall { position:fixed; pointer-events:none; z-index:1; font-size:16px; animation: diamondFall linear infinite; }
+    .gem-fall:nth-child(1)  { left:3%;  animation-duration:7s;   animation-delay:0s;   }
+    .gem-fall:nth-child(2)  { left:10%; animation-duration:11s;  animation-delay:1.5s; animation-name:diamondFloat; }
+    .gem-fall:nth-child(3)  { left:18%; animation-duration:8s;   animation-delay:3s;   }
+    .gem-fall:nth-child(4)  { left:27%; animation-duration:13s;  animation-delay:0.5s; animation-name:diamondFloat; }
+    .gem-fall:nth-child(5)  { left:36%; animation-duration:9s;   animation-delay:4s;   }
+    .gem-fall:nth-child(6)  { left:45%; animation-duration:10s;  animation-delay:2s;   animation-name:diamondFloat; }
+    .gem-fall:nth-child(7)  { left:55%; animation-duration:7.5s; animation-delay:5s;   }
+    .gem-fall:nth-child(8)  { left:64%; animation-duration:12s;  animation-delay:1s;   animation-name:diamondFloat; }
+    .gem-fall:nth-child(9)  { left:73%; animation-duration:8.5s; animation-delay:3.5s; }
+    .gem-fall:nth-child(10) { left:82%; animation-duration:11s;  animation-delay:2.5s; animation-name:diamondFloat; }
+    .gem-fall:nth-child(11) { left:91%; animation-duration:9.5s; animation-delay:0.8s; }
+    .gem-fall:nth-child(12) { left:96%; animation-duration:10.5s;animation-delay:4.5s; animation-name:diamondFloat; }
+  }
+
+  /* Mobile menu */
+  .mobile-slide { transform: translateX(100%); transition: transform .3s ease; }
+  .mobile-slide.open { transform: translateX(0); }
+
+  /* Triangulum badge */
+  .tri-badge { font-size:10px; color:rgba(201,168,76,.2); letter-spacing:.15em; transition:color .3s; text-decoration:none; }
+  .tri-badge:hover { color:rgba(201,168,76,.6); }
+</style>
+</head>
+<body class="text-mText antialiased" x-data="mannyApp()" x-init="init()" x-cloak>
+
+<!-- Pantalla de carga -->
+<div x-show="cargando" class="fixed inset-0 z-[100] flex items-center justify-center" style="background:#0A0A0A">
+  <div class="text-center">
+    <div class="w-12 h-12 border-4 border-mGold/20 border-t-mGold rounded-full animate-spin mx-auto mb-4"></div>
+    <p class="font-display text-mGold tracking-widest text-sm">MANNY</p>
+  </div>
+</div>
+
+<!-- Diamantes y piedras cayendo -->
+<div class="gem-fall" aria-hidden="true">💎</div>
+<div class="gem-fall" aria-hidden="true">✦</div>
+<div class="gem-fall" aria-hidden="true">💎</div>
+<div class="gem-fall" aria-hidden="true">⭐</div>
+<div class="gem-fall" aria-hidden="true">💎</div>
+<div class="gem-fall" aria-hidden="true">✦</div>
+<div class="gem-fall" aria-hidden="true">💎</div>
+<div class="gem-fall" aria-hidden="true">⭐</div>
+<div class="gem-fall" aria-hidden="true">💎</div>
+<div class="gem-fall" aria-hidden="true">✦</div>
+<div class="gem-fall" aria-hidden="true">💎</div>
+<div class="gem-fall" aria-hidden="true">⭐</div>
+
+<!-- Mobile menu overlay -->
+<div class="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm md:hidden" x-show="mobileMenu" @click="mobileMenu = false" x-transition.opacity></div>
+<div class="mobile-slide fixed right-0 top-0 h-full w-72 z-[80] flex flex-col p-8 md:hidden" style="background:#141414; border-left:1px solid rgba(201,168,76,0.1);" :class="mobileMenu ? 'open' : ''">
+  <div class="flex justify-between items-center mb-10">
+    <span class="font-display text-mGold tracking-widest">MANNY</span>
+    <button @click="mobileMenu = false" aria-label="Cerrar"><i data-lucide="x" class="w-5 h-5 text-mMuted"></i></button>
+  </div>
+  <nav class="flex flex-col gap-6 text-xs font-cinzel tracking-widest uppercase text-mMuted">
+    <a href="#colecciones" @click="mobileMenu = false" class="hover:text-mGold smooth">Colecciones</a>
+    <a href="#proceso" @click="mobileMenu = false" class="hover:text-mGold smooth">El Proceso</a>
+    <a href="#contacto" @click="mobileMenu = false" class="hover:text-mGold smooth">Contacto</a>
+  </nav>
+  <a :href="waLink('Hola Manny! Quiero consultar sobre tus remeras.')" target="_blank"
+     class="mt-auto inline-flex items-center justify-center gap-2 bg-mAccent text-mText px-6 py-4 rounded-full font-cinzel text-xs tracking-widest uppercase">
+    <i data-lucide="message-circle" class="w-4 h-4"></i> Pedir diseño
+  </a>
+</div>
+
+  <!-- ===== NAV ===== -->
+  <nav class="fixed top-0 inset-x-0 z-40 smooth" :class="scrolled ? 'bg-mPrimary/95 backdrop-blur-md border-b border-white/5' : 'bg-transparent'">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 flex items-center justify-between h-18 py-4">
+      <a href="#inicio" class="flex items-center gap-2"><span class="font-display text-xl sm:text-2xl tracking-widest gold-text">MANNY</span><span class="font-cinzel text-mGold/50 text-xs tracking-[0.3em] hidden sm:inline">· El Chino ·</span></a>
+      <div class="hidden md:flex items-center gap-8 text-xs font-cinzel tracking-widest text-mMuted uppercase">
+        <a href="#colecciones" class="hover:text-mGold smooth">Colecciones</a>
+        <a href="#proceso" class="hover:text-mGold smooth">El Proceso</a>
+        <a href="#contacto" class="hover:text-mGold smooth">Contacto</a>
+        <button @click="adminOpen = true" class="opacity-30 hover:opacity-80 smooth"><i data-lucide="settings" class="w-4 h-4 text-mMuted"></i></button>
+      </div>
+      <div class="flex items-center gap-2">
+        <a :href="waLink('Hola Manny! Quiero consultar sobre tus remeras.')" target="_blank"
+           class="hidden sm:inline-flex items-center gap-2 border border-mGold/40 hover:border-mGold text-mGold hover:bg-mGold/10 px-5 py-2.5 rounded-full text-xs font-cinzel tracking-widest smooth">
+          <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Pedir diseño
+        </a>
+        <button class="md:hidden p-2" @click="mobileMenu = true" aria-label="Abrir menú">
+          <i data-lucide="menu" class="w-5 h-5 text-mGold"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section id="inicio" class="relative min-h-screen flex items-center overflow-hidden noise-bg">
+    <!-- Fondo con destellos de piedras animados -->
+    <div class="absolute inset-0 pointer-events-none">
+      <!-- Destellos dorados -->
+      <svg class="sparkle absolute" style="top:12%;left:8%;width:18px" viewBox="0 0 24 24"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z" fill="#C9A84C"/></svg>
+      <svg class="sparkle-2 absolute" style="top:25%;left:18%;width:12px" viewBox="0 0 24 24"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z" fill="#F0D080"/></svg>
+      <svg class="sparkle-3 absolute" style="top:65%;left:5%;width:20px" viewBox="0 0 24 24"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z" fill="#C9A84C"/></svg>
+      <svg class="sparkle-4 absolute" style="top:80%;left:22%;width:14px" viewBox="0 0 24 24"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z" fill="#F0D080"/></svg>
+      <!-- Destellos plateados -->
+      <svg class="sparkle-2 absolute" style="top:15%;right:12%;width:16px" viewBox="0 0 24 24"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z" fill="#D0D0E8"/></svg>
+      <svg class="sparkle absolute" style="top:45%;right:8%;width:22px" viewBox="0 0 24 24"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z" fill="#B8B8C8"/></svg>
+      <svg class="sparkle-5 absolute" style="top:70%;right:18%;width:14px" viewBox="0 0 24 24"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z" fill="#D0D0E8"/></svg>
+      <svg class="sparkle-3 absolute" style="top:35%;right:30%;width:10px" viewBox="0 0 24 24"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z" fill="#C9A84C"/></svg>
+    </div>
+
+    <!-- Logo SVG central -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-[0.04]">
+      <svg viewBox="0 0 600 200" class="w-full max-w-4xl px-8">
+        <text x="50%" y="75%" text-anchor="middle" font-family="Cinzel Decorative" font-size="120" font-weight="900" fill="#C9A84C" letter-spacing="20">MANNY</text>
+      </svg>
+    </div>
+
+    <div class="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 pt-28 pb-24 w-full text-center">
+      <!-- Logo principal -->
+      <div class="mb-8 reveal" data-reveal>
+        <!-- Rosa SVG decorativa arriba -->
+        <svg class="w-10 h-10 mx-auto mb-4 text-mAccent opacity-80" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="6" fill="currentColor" opacity="0.9"/>
+          <path d="M20 4 C20 4 16 12 20 14 C24 12 20 4 20 4Z" fill="currentColor" opacity="0.7"/>
+          <path d="M20 26 C20 26 16 34 20 36 C24 34 20 26 20 26Z" fill="currentColor" opacity="0.7"/>
+          <path d="M4 20 C4 20 12 16 14 20 C12 24 4 20 4 20Z" fill="currentColor" opacity="0.7"/>
+          <path d="M26 20 C26 20 34 16 36 20 C34 24 26 20 26 20Z" fill="currentColor" opacity="0.7"/>
+          <path d="M7.5 7.5 C7.5 7.5 13 13 14 16 C11 17 7.5 7.5 7.5 7.5Z" fill="currentColor" opacity="0.5"/>
+          <path d="M32.5 7.5 C32.5 7.5 27 13 26 16 C29 17 32.5 7.5 32.5 7.5Z" fill="currentColor" opacity="0.5"/>
+          <path d="M7.5 32.5 C7.5 32.5 13 27 14 24 C11 23 7.5 32.5 7.5 32.5Z" fill="currentColor" opacity="0.5"/>
+          <path d="M32.5 32.5 C32.5 32.5 27 27 26 24 C29 23 32.5 32.5 32.5 32.5Z" fill="currentColor" opacity="0.5"/>
+        </svg>
+
+        <h1 class="font-display text-6xl sm:text-8xl lg:text-[10rem] leading-none tracking-[0.15em] gold-text">MANNY</h1>
+        <p class="font-cinzel text-mGold/60 text-xs sm:text-sm tracking-[0.6em] uppercase mt-2">✦ El Chino ✦</p>
+        <div class="gold-line w-48 mx-auto my-4"></div>
+        <p class="font-cinzel text-mCream/70 text-sm sm:text-base tracking-[0.4em] uppercase">Art Wear · San Pedro de Macorís</p>
+      </div>
+
+      <p class="text-mMuted text-base sm:text-lg leading-relaxed max-w-xl mx-auto mb-10 reveal" data-reveal x-text="store.description"></p>
+
+      <div class="flex flex-wrap justify-center gap-4 reveal" data-reveal>
+        <a :href="waLink('Hola Manny! Vi tus diseños y quiero saber más sobre las remeras disponibles.')" target="_blank"
+           class="inline-flex items-center gap-2.5 bg-mAccent hover:bg-red-800 text-mText px-8 py-4 rounded-full font-cinzel text-xs tracking-widest uppercase smooth shadow-lg shadow-mAccent/20">
+          <i data-lucide="message-circle" class="w-4 h-4"></i> Pedir mi remera
+        </a>
+        <a href="#colecciones"
+           class="inline-flex items-center gap-2.5 border border-mGold/40 hover:border-mGold text-mGold px-8 py-4 rounded-full font-cinzel text-xs tracking-widest uppercase smooth">
+          Ver diseños <i data-lucide="arrow-down" class="w-4 h-4"></i>
+        </a>
+      </div>
+
+      <!-- Indicadores de estilo -->
+      <div class="flex flex-wrap justify-center gap-3 mt-10 reveal" data-reveal>
+        <span class="flex items-center gap-1.5 text-xs font-cinzel tracking-widest text-mMuted">
+          <svg class="w-3 h-3 text-mGold" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+          Diseño a mano
+        </span>
+        <span class="text-mMuted/30">·</span>
+        <span class="flex items-center gap-1.5 text-xs font-cinzel tracking-widest text-mMuted">
+          <svg class="w-3 h-3 text-mSilver" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+          Piedras brillantes
+        </span>
+        <span class="text-mMuted/30">·</span>
+        <span class="flex items-center gap-1.5 text-xs font-cinzel tracking-widest text-mMuted">
+          <svg class="w-3 h-3 text-mAccent" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+          Oversize premium
+        </span>
+        <span class="text-mMuted/30">·</span>
+        <span class="flex items-center gap-1.5 text-xs font-cinzel tracking-widest text-mMuted">
+          <svg class="w-3 h-3 text-mGold" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+          Ediciones limitadas
+        </span>
+      </div>
+    </div>
+
+    <!-- Scroll hint -->
+    <div class="absolute bottom-8 inset-x-0 flex justify-center animate-bounce">
+      <i data-lucide="chevron-down" class="w-5 h-5 text-mGold/50"></i>
+    </div>
+  </section>
+
+  <!-- ===== COLECCIONES ===== -->
+  <section id="colecciones" class="max-w-6xl mx-auto px-5 sm:px-8 py-24">
+    <!-- Header -->
+    <div class="text-center mb-16 reveal" data-reveal>
+      <p class="font-cinzel text-mGold text-xs tracking-[0.3em] uppercase mb-3">Catálogo</p>
+      <h2 class="font-display text-3xl sm:text-5xl text-mText mb-4">Los Diseños</h2>
+      <div class="gold-line w-32 mx-auto mb-6"></div>
+      <p class="text-mMuted text-sm">Filtrá por colección o tipo de acabado</p>
+    </div>
+
+    <!-- Filtros -->
+    <div class="flex flex-wrap justify-center gap-2 mb-10 reveal" data-reveal>
+      <button @click="activeCollection = 'all'; activeBrillo = 'all'"
+              :class="activeCollection === 'all' && activeBrillo === 'all' ? 'bg-mGold text-mPrimary' : 'border border-mGold/30 text-mGold hover:border-mGold'"
+              class="px-4 py-2 rounded-full text-xs font-cinzel tracking-widest uppercase smooth">Todos</button>
+      <template x-for="col in store.collections" :key="col.id">
+        <button @click="activeCollection = col.id; activeBrillo = 'all'"
+                :class="activeCollection === col.id ? 'bg-mGold text-mPrimary' : 'border border-mGold/30 text-mGold hover:border-mGold'"
+                class="px-4 py-2 rounded-full text-xs font-cinzel tracking-widest uppercase smooth" x-text="col.name"></button>
+      </template>
+    </div>
+
+    <!-- Filtro brillo/sin brillo -->
+    <div class="flex justify-center gap-3 mb-12 reveal" data-reveal>
+      <button @click="activeBrillo = 'all'"
+              :class="activeBrillo === 'all' ? 'bg-mSurface border-mSilver text-mText' : 'border-white/10 text-mMuted'"
+              class="flex items-center gap-2 border px-4 py-2 rounded-full text-xs font-cinzel tracking-widest smooth">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+        Todos los acabados
+      </button>
+      <button @click="activeBrillo = true"
+              :class="activeBrillo === true ? 'bg-mSurface border-mSilver text-mSilver' : 'border-white/10 text-mMuted'"
+              class="flex items-center gap-2 border px-4 py-2 rounded-full text-xs font-cinzel tracking-widest smooth">
+        <svg class="w-3.5 h-3.5 text-mSilver" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+        Con piedras
+      </button>
+      <button @click="activeBrillo = false"
+              :class="activeBrillo === false ? 'bg-mSurface border-mGold text-mGold' : 'border-white/10 text-mMuted'"
+              class="flex items-center gap-2 border px-4 py-2 rounded-full text-xs font-cinzel tracking-widest smooth">
+        <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i>
+        Arte puro
+      </button>
+    </div>
+
+    <!-- Grid de productos -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <template x-for="product in filteredProducts()" :key="product.id">
+        <div class="card-dark rounded-2xl overflow-hidden group cursor-pointer" @click="openProduct(product)">
+          <!-- Imagen / placeholder con marco de rosas SVG -->
+          <div class="relative aspect-square bg-mSurface overflow-hidden">
+            <!-- Marco de rosas decorativo -->
+            <svg class="absolute inset-0 w-full h-full opacity-20 group-hover:opacity-35 smooth" viewBox="0 0 300 300" fill="none">
+              <!-- Esquina sup izq -->
+              <circle cx="30" cy="30" r="8" fill="#8B1A1A" opacity="0.8"/>
+              <path d="M15 30 Q22 15 30 22 Q38 15 45 30 Q38 45 30 38 Q22 45 15 30Z" fill="#8B1A1A" opacity="0.6"/>
+              <line x1="45" y1="30" x2="80" y2="30" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+              <line x1="30" y1="45" x2="30" y2="80" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+              <!-- Espina -->
+              <path d="M50 25 L55 30 L50 35" stroke="#C9A84C" stroke-width="0.8" fill="none" opacity="0.6"/>
+              <!-- Esquina sup der -->
+              <circle cx="270" cy="30" r="8" fill="#8B1A1A" opacity="0.8"/>
+              <path d="M255 30 Q262 15 270 22 Q278 15 285 30 Q278 45 270 38 Q262 45 255 30Z" fill="#8B1A1A" opacity="0.6"/>
+              <line x1="255" y1="30" x2="220" y2="30" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+              <line x1="270" y1="45" x2="270" y2="80" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+              <!-- Esquina inf izq -->
+              <circle cx="30" cy="270" r="8" fill="#8B1A1A" opacity="0.8"/>
+              <path d="M15 270 Q22 255 30 262 Q38 255 45 270 Q38 285 30 278 Q22 285 15 270Z" fill="#8B1A1A" opacity="0.6"/>
+              <line x1="45" y1="270" x2="80" y2="270" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+              <line x1="30" y1="255" x2="30" y2="220" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+              <!-- Esquina inf der -->
+              <circle cx="270" cy="270" r="8" fill="#8B1A1A" opacity="0.8"/>
+              <path d="M255 270 Q262 255 270 262 Q278 255 285 270 Q278 285 270 278 Q262 285 255 270Z" fill="#8B1A1A" opacity="0.6"/>
+              <line x1="255" y1="270" x2="220" y2="270" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+              <line x1="270" y1="255" x2="270" y2="220" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+            </svg>
+
+            <!-- Ícono central según colección -->
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="text-center">
+                <template x-if="product.collection === 'calaveras'">
+                  <svg class="w-20 h-20 mx-auto text-mText/20 group-hover:text-mText/35 smooth" viewBox="0 0 80 80" fill="none">
+                    <ellipse cx="40" cy="34" rx="22" ry="24" fill="currentColor"/>
+                    <rect x="28" y="52" width="8" height="12" rx="2" fill="currentColor"/>
+                    <rect x="44" y="52" width="8" height="12" rx="2" fill="currentColor"/>
+                    <rect x="28" y="54" width="24" height="4" fill="currentColor"/>
+                    <ellipse cx="32" cy="30" rx="6" ry="7" fill="#0A0A0A"/>
+                    <ellipse cx="48" cy="30" rx="6" ry="7" fill="#0A0A0A"/>
+                    <ellipse cx="32" cy="30" rx="3" ry="3.5" fill="currentColor" opacity="0.3"/>
+                    <ellipse cx="48" cy="30" rx="3" ry="3.5" fill="currentColor" opacity="0.3"/>
+                    <path d="M35 42 L40 46 L45 42" stroke="#0A0A0A" stroke-width="1.5" fill="none"/>
+                  </svg>
+                </template>
+                <template x-if="product.collection === 'guerreras'">
+                  <svg class="w-20 h-20 mx-auto text-mText/20 group-hover:text-mText/35 smooth" viewBox="0 0 80 80" fill="none">
+                    <ellipse cx="40" cy="22" rx="10" ry="12" fill="currentColor"/>
+                    <path d="M30 34 Q25 50 28 65 Q34 70 40 68 Q46 70 52 65 Q55 50 50 34Z" fill="currentColor"/>
+                    <line x1="55" y1="15" x2="70" y2="5" stroke="currentColor" stroke-width="2"/>
+                    <polygon points="68,3 72,3 72,7" fill="currentColor"/>
+                    <path d="M38 34 Q35 42 30 50" stroke="#0A0A0A" stroke-width="1.5" fill="none"/>
+                    <circle cx="20" cy="55" r="5" fill="currentColor" opacity="0.5"/>
+                    <circle cx="24" cy="48" r="3" fill="currentColor" opacity="0.4"/>
+                  </svg>
+                </template>
+                <template x-if="product.collection === 'japones'">
+                  <svg class="w-20 h-20 mx-auto text-mText/20 group-hover:text-mText/35 smooth" viewBox="0 0 80 80" fill="none">
+                    <ellipse cx="40" cy="22" rx="10" ry="13" fill="currentColor"/>
+                    <path d="M28 35 Q20 38 18 55 Q28 65 40 64 Q52 65 62 55 Q60 38 52 35Z" fill="currentColor"/>
+                    <path d="M28 35 L20 28 L22 38" fill="currentColor" opacity="0.7"/>
+                    <path d="M52 35 L60 28 L58 38" fill="currentColor" opacity="0.7"/>
+                    <line x1="30" y1="45" x2="50" y2="45" stroke="#0A0A0A" stroke-width="1"/>
+                    <line x1="32" y1="52" x2="48" y2="52" stroke="#0A0A0A" stroke-width="1"/>
+                    <circle cx="15" cy="35" r="4" fill="currentColor" opacity="0.4"/>
+                    <circle cx="12" cy="42" r="3" fill="currentColor" opacity="0.3"/>
+                    <circle cx="65" cy="35" r="4" fill="currentColor" opacity="0.4"/>
+                  </svg>
+                </template>
+                <template x-if="product.collection === 'limitada'">
+                  <svg class="w-20 h-20 mx-auto text-mGold/30 group-hover:text-mGold/50 smooth" viewBox="0 0 80 80" fill="none">
+                    <polygon points="40,5 47,28 72,28 52,43 59,67 40,52 21,67 28,43 8,28 33,28" fill="currentColor"/>
+                  </svg>
+                </template>
+              </div>
+            </div>
+
+            <!-- Destellos si tiene brillo -->
+            <template x-if="product.hasBrillo">
+              <div class="absolute inset-0 pointer-events-none">
+                <svg class="sparkle absolute" style="top:15%;left:20%;width:12px;opacity:0" viewBox="0 0 24 24" fill="#D0D0E8"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+                <svg class="sparkle-2 absolute" style="top:30%;right:18%;width:10px;opacity:0" viewBox="0 0 24 24" fill="#C9A84C"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+                <svg class="sparkle-3 absolute" style="bottom:20%;left:30%;width:14px;opacity:0" viewBox="0 0 24 24" fill="#E8E8FF"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+                <svg class="sparkle-4 absolute" style="top:55%;right:25%;width:8px;opacity:0" viewBox="0 0 24 24" fill="#C9A84C"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+                <svg class="sparkle-5 absolute" style="bottom:35%;left:15%;width:10px;opacity:0" viewBox="0 0 24 24" fill="#D0D0E8"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+              </div>
+            </template>
+
+            <!-- Badges -->
+            <div class="absolute top-3 left-3 flex flex-col gap-1.5">
+              <template x-if="product.featured">
+                <span class="text-[10px] font-cinzel tracking-widest uppercase bg-mAccent/90 text-mText px-2.5 py-1 rounded-full">Destacada</span>
+              </template>
+              <template x-if="product.hasBrillo">
+                <span class="text-[10px] font-cinzel tracking-widest uppercase brillo-badge px-2.5 py-1 rounded-full flex items-center gap-1">
+                  <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+                  Con piedras
+                </span>
+              </template>
+              <template x-if="!product.hasBrillo">
+                <span class="text-[10px] font-cinzel tracking-widest uppercase border border-mGold/40 text-mGold px-2.5 py-1 rounded-full">Arte puro</span>
+              </template>
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="p-5">
+            <p class="text-mGold/70 text-[10px] font-cinzel tracking-[0.2em] uppercase mb-1" x-text="collectionName(product.collection)"></p>
+            <h3 class="font-cinzel text-mText text-base mb-2 group-hover:text-mGold smooth" x-text="product.name"></h3>
+            <p class="text-mMuted text-xs leading-relaxed line-clamp-2 mb-4" x-text="product.description"></p>
+            <div class="flex items-center justify-between">
+              <div class="flex gap-1.5">
+                <template x-for="size in product.sizes.slice(0,4)" :key="size">
+                  <span class="text-[9px] border border-mGold/20 text-mMuted px-1.5 py-0.5 rounded font-cinzel" x-text="size"></span>
+                </template>
+                <span x-show="product.sizes.length > 4" class="text-[9px] text-mMuted font-cinzel">...</span>
+              </div>
+              <button @click.stop="openProduct(product)" class="text-mGold text-xs font-cinzel tracking-widest hover:text-mGold/70 smooth flex items-center gap-1">
+                Ver <i data-lucide="arrow-right" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </section>
+
+  <!-- ===== EL PROCESO ===== -->
+  <section id="proceso" class="bg-mSurface py-24 relative overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none opacity-30">
+      <svg class="sparkle absolute" style="top:20%;left:5%;width:16px" viewBox="0 0 24 24" fill="#C9A84C"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+      <svg class="sparkle-3 absolute" style="bottom:30%;right:8%;width:20px" viewBox="0 0 24 24" fill="#D0D0E8"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+    </div>
+    <div class="max-w-6xl mx-auto px-5 sm:px-8">
+      <div class="text-center mb-16 reveal" data-reveal>
+        <p class="font-cinzel text-mGold text-xs tracking-[0.3em] uppercase mb-3">Detrás del diseño</p>
+        <h2 class="font-display text-3xl sm:text-5xl text-mText mb-4">El Proceso</h2>
+        <div class="gold-line w-32 mx-auto"></div>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-8">
+        <div class="text-center reveal" data-reveal>
+          <div class="w-16 h-16 mx-auto mb-5 border border-mGold/30 rounded-2xl flex items-center justify-center bg-mPrimary">
+            <i data-lucide="pen-tool" class="w-7 h-7 text-mGold"></i>
+          </div>
+          <h3 class="font-cinzel text-mText text-base mb-3 tracking-widest">01 · Diseño</h3>
+          <p class="text-mMuted text-sm leading-relaxed">Manny crea cada diseño a mano. Calaveras, rosas, guerreras y geishas nacen del lápiz antes de llegar a la tela.</p>
+        </div>
+        <div class="text-center reveal" data-reveal>
+          <div class="w-16 h-16 mx-auto mb-5 border border-mSilver/30 rounded-2xl flex items-center justify-center bg-mPrimary relative">
+            <i data-lucide="cpu" class="w-7 h-7 text-mSilver"></i>
+            <svg class="sparkle-2 absolute -top-1 -right-1 w-4 h-4" viewBox="0 0 24 24" fill="#D0D0E8"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+          </div>
+          <h3 class="font-cinzel text-mText text-base mb-3 tracking-widest">02 · Impresión</h3>
+          <p class="text-mMuted text-sm leading-relaxed">El arte digital pasa a la máquina que transfiere cada detalle a la remera oversize con precisión total.</p>
+        </div>
+        <div class="text-center reveal" data-reveal>
+          <div class="w-16 h-16 mx-auto mb-5 border border-mAccent/30 rounded-2xl flex items-center justify-center bg-mPrimary">
+            <i data-lucide="gem" class="w-7 h-7 text-mAccent"></i>
+          </div>
+          <h3 class="font-cinzel text-mText text-base mb-3 tracking-widest">03 · Piedras</h3>
+          <p class="text-mMuted text-sm leading-relaxed">En los diseños con brillo, Manny coloca piedras a mano una a una. Ese detalle es lo que las hace irrepetibles.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA FINAL ===== -->
+  <section id="contacto" class="py-24 relative overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none">
+      <svg class="sparkle absolute" style="top:25%;left:10%;width:20px" viewBox="0 0 24 24" fill="#C9A84C"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+      <svg class="sparkle-2 absolute" style="top:60%;right:12%;width:16px" viewBox="0 0 24 24" fill="#D0D0E8"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+      <svg class="sparkle-4 absolute" style="bottom:20%;left:40%;width:12px" viewBox="0 0 24 24" fill="#C9A84C"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 sm:px-8 text-center reveal" data-reveal>
+      <p class="font-cinzel text-mGold text-xs tracking-[0.3em] uppercase mb-3">¿Te quedaste con una en mente?</p>
+      <h2 class="font-display text-3xl sm:text-5xl text-mText mb-5">Pedí la tuya</h2>
+      <div class="gold-line w-32 mx-auto mb-7"></div>
+      <p class="text-mMuted leading-relaxed mb-10">Escribile a Manny por WhatsApp. Te dice qué diseños están disponibles, qué tallas quedan y si podés pedir uno personalizado.</p>
+      <a :href="waLink('Hola Manny! Vi tu página y quiero saber qué remeras tenés disponibles.')" target="_blank"
+         class="inline-flex items-center gap-3 bg-mAccent hover:bg-red-800 text-mText px-10 py-5 rounded-full font-cinzel text-sm tracking-widest uppercase smooth shadow-xl shadow-mAccent/20">
+        <i data-lucide="message-circle" class="w-5 h-5"></i> Escribir por WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-mSurface border-t border-white/5 py-10">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-mMuted font-cinzel tracking-widest">
+      <span class="gold-text font-display text-lg">MANNY <span class="font-cinzel text-mGold/50 text-sm tracking-widest">· El Chino ·</span></span>
+      <span x-text="store.address"></span>
+      <div class="flex items-center gap-4">
+        <button @click="adminOpen = true" class="opacity-30 hover:opacity-60 smooth flex items-center gap-1.5"><i data-lucide="settings" class="w-3.5 h-3.5"></i> Panel</button>
+        <a href="#" class="tri-badge" title="Powered by Triangulum Sync">✦ Powered by Triangulum Sync</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Boton flotante WA -->
+  <a :href="waLink('Hola Manny! Quiero saber sobre tus remeras.')" target="_blank"
+     class="fixed bottom-5 right-5 z-30 bg-mAccent hover:bg-red-800 text-mText p-4 rounded-full shadow-2xl smooth hover:scale-110">
+    <i data-lucide="message-circle" class="w-6 h-6"></i>
+  </a>
+
+  <!-- ===== MODAL PRODUCTO ===== -->
+  <div x-show="selectedProduct" x-transition.opacity class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm grid place-items-center p-4" @click.self="selectedProduct = null">
+    <div x-show="selectedProduct" x-transition class="bg-mSurface border border-mGold/20 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto no-scrollbar" @click.stop>
+      <template x-if="selectedProduct">
+        <div>
+          <div class="relative aspect-square bg-mPrimary overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center text-mText/10">
+              <svg class="w-32 h-32" viewBox="0 0 80 80" fill="currentColor">
+                <template x-if="selectedProduct.collection === 'calaveras'">
+                  <g><ellipse cx="40" cy="34" rx="22" ry="24" fill="currentColor"/><rect x="28" y="52" width="8" height="12" rx="2" fill="currentColor"/><rect x="44" y="52" width="8" height="12" rx="2" fill="currentColor"/><rect x="28" y="54" width="24" height="4" fill="currentColor"/></g>
+                </template>
+              </svg>
+            </div>
+            <template x-if="selectedProduct.hasBrillo">
+              <div class="absolute inset-0 pointer-events-none">
+                <svg class="sparkle absolute" style="top:20%;left:25%;width:16px" viewBox="0 0 24 24" fill="#D0D0E8"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+                <svg class="sparkle-3 absolute" style="top:40%;right:20%;width:12px" viewBox="0 0 24 24" fill="#C9A84C"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+                <svg class="sparkle-2 absolute" style="bottom:25%;left:35%;width:14px" viewBox="0 0 24 24" fill="#E8E8FF"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+              </div>
+            </template>
+            <button @click="selectedProduct = null" class="absolute top-4 right-4 bg-mSurface/80 p-2 rounded-full hover:scale-105 smooth"><i data-lucide="x" class="w-4 h-4"></i></button>
+          </div>
+          <div class="p-6">
+            <div class="flex items-center gap-2 mb-2">
+              <p class="text-mGold/70 text-[10px] font-cinzel tracking-[0.2em] uppercase" x-text="collectionName(selectedProduct.collection)"></p>
+              <template x-if="selectedProduct.hasBrillo">
+                <span class="text-[10px] brillo-badge font-cinzel tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <svg class="w-2 h-2" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 9.5L21 8L14.5 12.5L17 20L12 15.5L7 20L9.5 12.5L3 8L10.5 9.5Z"/></svg>
+                  Con piedras
+                </span>
+              </template>
+            </div>
+            <h3 class="font-cinzel text-xl text-mText mb-3" x-text="selectedProduct.name"></h3>
+            <p class="text-mMuted text-sm leading-relaxed mb-5" x-text="selectedProduct.description"></p>
+            <div class="mb-5">
+              <p class="text-mGold/70 text-[10px] font-cinzel tracking-widest uppercase mb-2">Tallas disponibles</p>
+              <div class="flex flex-wrap gap-2">
+                <template x-for="size in selectedProduct.sizes" :key="size">
+                  <span class="border border-mGold/30 text-mText text-xs font-cinzel px-3 py-1.5 rounded-lg" x-text="size"></span>
+                </template>
+              </div>
+            </div>
+            <button @click="orderProduct(selectedProduct)"
+                    class="w-full inline-flex items-center justify-center gap-2.5 bg-mAccent hover:bg-red-800 text-mText py-4 rounded-xl font-cinzel text-xs tracking-widest uppercase smooth">
+              <i data-lucide="message-circle" class="w-4 h-4"></i> Pedir esta remera
+            </button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ===== PANEL ADMIN ===== -->
+  <div x-show="adminOpen" x-transition.opacity class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm" @click.self="adminOpen = false">
+    <div x-show="adminOpen" x-transition class="absolute right-0 top-0 h-full w-full max-w-xl bg-mSurface border-l border-white/5 flex flex-col">
+      <div class="flex items-center justify-between p-5 border-b border-white/5">
+        <h3 class="font-cinzel text-mText flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-mGold"></i> Panel MANNY</h3>
+        <div class="flex items-center gap-2">
+          <button x-show="isLogged" @click="logout()" class="text-xs font-cinzel text-mMuted hover:text-red-500 flex items-center gap-1.5 smooth"><i data-lucide="log-out" class="w-4 h-4"></i> Salir</button>
+          <button @click="adminOpen = false" class="p-2 hover:bg-white/5 rounded-lg smooth"><i data-lucide="x" class="w-5 h-5 text-mMuted"></i></button>
+        </div>
+      </div>
+
+      <div x-show="!isLogged" class="flex-1 grid place-items-center p-8">
+        <div class="w-full max-w-sm text-center">
+          <i data-lucide="lock" class="w-10 h-10 text-mGold mx-auto mb-4"></i>
+          <h4 class="font-cinzel text-mText text-lg mb-4 tracking-widest">Acceso al panel</h4>
+          <input type="password" x-model="passwordInput" @keydown.enter="login()" placeholder="Clave"
+                 class="w-full bg-mPrimary border border-white/10 focus:border-mGold text-mText rounded-xl px-4 py-3 text-center text-sm outline-none smooth">
+          <p x-show="loginError" class="text-red-500 text-xs mt-2 font-cinzel">Clave incorrecta.</p>
+          <button @click="login()" class="w-full mt-4 bg-mGold hover:bg-mCream text-mPrimary py-3 rounded-xl font-cinzel tracking-widest text-sm smooth">Entrar</button>
+        </div>
+      </div>
+
+      <div x-show="isLogged" class="flex-1 overflow-y-auto no-scrollbar">
+        <div class="flex border-b border-white/5 px-5 sticky top-0 bg-mSurface z-10 overflow-x-auto no-scrollbar">
+          <button @click="adminTab = 'products'" :class="adminTab === 'products' ? 'border-mGold text-mGold' : 'border-transparent text-mMuted'" class="px-4 py-3 text-xs font-cinzel tracking-widest border-b-2 smooth whitespace-nowrap uppercase">Remeras</button>
+          <button @click="adminTab = 'store'" :class="adminTab === 'store' ? 'border-mGold text-mGold' : 'border-transparent text-mMuted'" class="px-4 py-3 text-xs font-cinzel tracking-widest border-b-2 smooth whitespace-nowrap uppercase">Negocio</button>
+          <button @click="adminTab = 'security'" :class="adminTab === 'security' ? 'border-mGold text-mGold' : 'border-transparent text-mMuted'" class="px-4 py-3 text-xs font-cinzel tracking-widest border-b-2 smooth whitespace-nowrap uppercase">Clave</button>
+        </div>
+
+        <div x-show="adminTab === 'products'" class="p-5 space-y-4">
+          <button @click="newProduct()" class="w-full flex items-center justify-center gap-2 border border-mGold/40 text-mGold hover:bg-mGold/10 py-3 rounded-xl text-xs font-cinzel tracking-widest uppercase smooth"><i data-lucide="plus" class="w-4 h-4"></i> Agregar remera</button>
+          <div x-show="editingProduct" class="border border-mGold/30 rounded-2xl p-4 space-y-3 bg-mPrimary">
+            <template x-if="editingProduct">
+              <div class="space-y-3">
+                <input type="text" x-model="editingProduct.name" placeholder="Nombre del diseño" class="w-full bg-mSurface border border-white/10 text-mText rounded-xl px-3 py-2.5 text-sm outline-none focus:border-mGold smooth">
+                <textarea x-model="editingProduct.description" placeholder="Descripción" rows="3" class="w-full bg-mSurface border border-white/10 text-mText rounded-xl px-3 py-2.5 text-sm outline-none focus:border-mGold smooth"></textarea>
+                <div class="grid grid-cols-2 gap-3">
+                  <select x-model="editingProduct.collection" class="bg-mSurface border border-white/10 text-mText rounded-xl px-3 py-2.5 text-sm outline-none focus:border-mGold smooth">
+                    <option value="">Colección</option>
+                    <template x-for="col in store.collections" :key="col.id">
+                      <option :value="col.id" x-text="col.name"></option>
+                    </template>
+                  </select>
+                  <input type="text" x-model="editingProduct.color" placeholder="Color" class="bg-mSurface border border-white/10 text-mText rounded-xl px-3 py-2.5 text-sm outline-none focus:border-mGold smooth">
+                </div>
+                <label class="flex items-center gap-2 text-sm text-mText cursor-pointer font-cinzel tracking-widest text-xs uppercase">
+                  <input type="checkbox" x-model="editingProduct.hasBrillo" class="w-4 h-4 rounded accent-mGold"> Con piedras brillantes
+                </label>
+                <label class="flex items-center gap-2 text-sm text-mText cursor-pointer font-cinzel tracking-widest text-xs uppercase">
+                  <input type="checkbox" x-model="editingProduct.featured" class="w-4 h-4 rounded accent-mGold"> Destacada
+                </label>
+                <div class="flex gap-2 pt-1">
+                  <button @click="saveProduct()" class="flex-1 bg-mGold hover:bg-mCream text-mPrimary py-2.5 rounded-xl text-xs font-cinzel tracking-widest uppercase smooth">Guardar</button>
+                  <button @click="editingProduct = null" class="px-4 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-cinzel tracking-widest uppercase smooth">Cancelar</button>
+                </div>
+              </div>
+            </template>
+          </div>
+          <div class="space-y-2">
+            <template x-for="p in products" :key="p.id">
+              <div class="flex items-center gap-3 border border-white/5 rounded-xl p-3">
+                <div class="flex-1 min-w-0">
+                  <h5 class="text-sm text-mText font-cinzel line-clamp-1" x-text="p.name"></h5>
+                  <span class="text-[10px] text-mMuted font-cinzel" x-text="collectionName(p.collection) + (p.hasBrillo ? ' · ✦ Con piedras' : ' · Arte puro')"></span>
+                </div>
+                <button @click="editProd(p)" class="p-2 hover:bg-white/5 rounded-lg smooth"><i data-lucide="pencil" class="w-4 h-4 text-mMuted"></i></button>
+                <button @click="deleteProd(p)" class="p-2 text-red-500/60 hover:text-red-500 smooth"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <div x-show="adminTab === 'store'" class="p-5 space-y-3">
+          <div><label class="text-[10px] font-cinzel text-mMuted uppercase tracking-widest">WhatsApp (1809...)</label>
+            <input type="text" x-model="adminData.whatsappNumber" class="w-full mt-1 bg-mPrimary border border-white/10 text-mText rounded-xl px-3 py-2.5 text-sm outline-none focus:border-mGold smooth"></div>
+          <div><label class="text-[10px] font-cinzel text-mMuted uppercase tracking-widest">Dirección</label>
+            <input type="text" x-model="adminData.address" class="w-full mt-1 bg-mPrimary border border-white/10 text-mText rounded-xl px-3 py-2.5 text-sm outline-none focus:border-mGold smooth"></div>
+          <div><label class="text-[10px] font-cinzel text-mMuted uppercase tracking-widest">Descripción del hero</label>
+            <textarea x-model="adminData.description" rows="3" class="w-full mt-1 bg-mPrimary border border-white/10 text-mText rounded-xl px-3 py-2.5 text-sm outline-none focus:border-mGold smooth"></textarea></div>
+          <button @click="saveStore()" class="w-full bg-mGold hover:bg-mCream text-mPrimary py-3 rounded-xl text-xs font-cinzel tracking-widest uppercase smooth">Guardar</button>
+        </div>
+
+        <div x-show="adminTab === 'security'" class="p-5 space-y-3">
+          <p class="text-xs text-mMuted font-cinzel">Cambiá la clave de acceso al panel.</p>
+          <input type="text" x-model="newPassword" placeholder="Nueva clave" class="w-full bg-mPrimary border border-white/10 text-mText rounded-xl px-3 py-2.5 text-sm outline-none focus:border-mGold smooth">
+          <button @click="changePassword()" class="w-full bg-mGold hover:bg-mCream text-mPrimary py-3 rounded-xl text-xs font-cinzel tracking-widest uppercase smooth">Cambiar clave</button>
+        </div>
+
+        <div class="p-5 border-t border-white/5">
+          <p class="text-[10px] text-mMuted font-cinzel mb-3">Exportá para guardar los cambios en la web publicada.</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button @click="exportConfig()" class="bg-white/5 hover:bg-white/10 py-2.5 rounded-xl text-[10px] font-cinzel tracking-widest uppercase smooth flex items-center justify-center gap-2 text-mMuted"><i data-lucide="download" class="w-3.5 h-3.5"></i> config.js</button>
+            <button @click="exportProducts()" class="bg-white/5 hover:bg-white/10 py-2.5 rounded-xl text-[10px] font-cinzel tracking-widest uppercase smooth flex items-center justify-center gap-2 text-mMuted"><i data-lucide="download" class="w-3.5 h-3.5"></i> products.js</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <script>
+    function mannyApp() {
+      return {
+        store: {}, products: [],
+        scrolled: false,
+        selectedProduct: null,
+        activeCollection: 'all',
+        activeBrillo: 'all',
+        adminOpen: false,
+        isLogged: false,
+        passwordInput: '',
+        loginError: false,
+        adminTab: 'products',
+        adminData: {},
+        editingProduct: null,
+        newPassword: '',
+
+        cargando: true,
+        mobileMenu: false,
+        waConfig: { servicios: '', horarios: '', zona: '', pagos: '', extra: '' },
+        waResultados: null, waGenerando: false, waError: null,
+
+        async init() {
+          try {
+            const [cfgRemoto, prodsRemoto] = await Promise.all([sbCargarConfig(), sbCargarProductos()]);
+            this.store = cfgRemoto || JSON.parse(localStorage.getItem('manny_config') || 'null') || JSON.parse(JSON.stringify(window.STORE_CONFIG || {}));
+            this.products = prodsRemoto.length > 0 ? prodsRemoto : JSON.parse(localStorage.getItem('manny_products') || 'null') || JSON.parse(JSON.stringify(window.PRODUCTS_DATA || []));
+          } catch(e) {
+            const sc = localStorage.getItem('manny_config');
+            this.store = sc ? JSON.parse(sc) : JSON.parse(JSON.stringify(window.STORE_CONFIG || {}));
+            const sp = localStorage.getItem('manny_products');
+            this.products = sp ? JSON.parse(sp) : JSON.parse(JSON.stringify(window.PRODUCTS_DATA || []));
+          }
+          if (!this.store.collections) this.store.collections = [];
+          const sw = localStorage.getItem('manny_wa_config');
+          if (sw) this.waConfig = JSON.parse(sw);
+          this.cargando = false;
+          this.resetAdminData();
+          window.addEventListener('scroll', () => { this.scrolled = window.scrollY > 50; });
+          this.$nextTick(() => { lucide.createIcons(); this.setupReveal(); });
+        },
+
+        setupReveal() {
+          const obs = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+          }, { threshold: 0.12 });
+          document.querySelectorAll('[data-reveal]').forEach(el => obs.observe(el));
+        },
+
+        filteredProducts() {
+          let list = this.products;
+          if (this.activeCollection !== 'all') list = list.filter(p => p.collection === this.activeCollection);
+          if (this.activeBrillo !== 'all') list = list.filter(p => p.hasBrillo === this.activeBrillo);
+          this.$nextTick(() => lucide.createIcons());
+          return list;
+        },
+
+        collectionName(id) {
+          const col = (this.store.collections || []).find(c => c.id === id);
+          return col ? col.name : id;
+        },
+
+        openProduct(product) {
+          this.selectedProduct = product;
+          this.$nextTick(() => lucide.createIcons());
+        },
+
+        waLink(text) {
+          return `https://wa.me/${this.store.whatsappNumber}?text=${encodeURIComponent(text)}`;
+        },
+
+        orderProduct(product) {
+          const text = `*Pedido - MANNY Art Wear*\n\nRemera: ${product.name}\nColección: ${this.collectionName(product.collection)}\nAcabado: ${product.hasBrillo ? '✦ Con piedras brillantes' : 'Arte puro'}\n\nQuiero saber disponibilidad y precio!`;
+          window.open(this.waLink(text), '_blank');
+          this.selectedProduct = null;
+        },
+
+        login() {
+          if (this.passwordInput === (this.store.adminPassword || 'manny2026')) {
+            this.isLogged = true; this.loginError = false; this.passwordInput = '';
+            this.resetAdminData(); this.$nextTick(() => lucide.createIcons());
+          } else { this.loginError = true; }
+        },
+        logout() { this.isLogged = false; this.editingProduct = null; },
+
+        resetAdminData() {
+          this.adminData = {
+            whatsappNumber: this.store.whatsappNumber,
+            address: this.store.address,
+            description: this.store.description
+          };
+        },
+
+        saveStore() {
+          this.store.whatsappNumber = this.adminData.whatsappNumber;
+          this.store.address = this.adminData.address;
+          this.store.description = this.adminData.description;
+          this.persistConfig(); alert('Guardado!');
+        },
+
+        newProduct() {
+          this.editingProduct = { id: null, name: '', description: '', collection: '', color: 'Negro', hasBrillo: false, featured: false, sizes: ['S','M','L','XL'], inStock: true, image: '' };
+          this.$nextTick(() => lucide.createIcons());
+        },
+        editProd(p) { this.editingProduct = JSON.parse(JSON.stringify(p)); this.$nextTick(() => lucide.createIcons()); },
+        saveProduct() {
+          if (!this.editingProduct.name.trim()) { alert('Nombre requerido'); return; }
+          if (this.editingProduct.id) {
+            const idx = this.products.findIndex(p => p.id === this.editingProduct.id);
+            if (idx !== -1) this.products[idx] = this.editingProduct;
+          } else { this.editingProduct.id = Date.now(); this.products.push(this.editingProduct); }
+          this.persistProducts(); this.editingProduct = null; this.$nextTick(() => lucide.createIcons());
+        },
+        deleteProd(p) {
+          if (!confirm(`Eliminar "${p.name}"?`)) return;
+          this.products = this.products.filter(x => x.id !== p.id);
+          this.persistProducts(); this.$nextTick(() => lucide.createIcons());
+        },
+
+        changePassword() {
+          if (!this.newPassword.trim()) { alert('Escribí una clave'); return; }
+          this.store.adminPassword = this.newPassword.trim();
+          this.persistConfig(); this.newPassword = ''; alert('Clave actualizada!');
+        },
+
+        async persistConfig() {
+          localStorage.setItem('manny_config', JSON.stringify(this.store));
+          try { await sbGuardarConfig(this.store); } catch(e) { console.warn('Supabase config:', e); }
+        },
+        async persistProducts() {
+          localStorage.setItem('manny_products', JSON.stringify(this.products));
+          try { await sbGuardarProductos(this.products); } catch(e) { console.warn('Supabase products:', e); }
+        },
+
+        async generarRespuestasWA() {
+          if (!this.waConfig.servicios.trim()) { alert('Completá al menos los servicios.'); return; }
+          this.waGenerando = true; this.waError = null; this.waResultados = null;
+          const prompt = `Sos el asistente de MANNY Art Wear, una marca de remeras oversize con diseños artísticos únicos en San Pedro de Macorís, República Dominicana.
+
+Info:
+- Productos: ${this.waConfig.servicios}
+- Horarios: ${this.waConfig.horarios || 'No especificado'}
+- Zona: ${this.waConfig.zona || 'No especificado'}
+- Pagos: ${this.waConfig.pagos || 'No especificado'}
+- Destacar: ${this.waConfig.extra || 'Nada'}
+
+Generá este JSON exacto (sin markdown):
+{
+  "bienvenidaES": "Mensaje de bienvenida oscuro y artístico, máximo 3 párrafos, tono premium streetwear. Mencioná que cada diseño es único y hecho a mano.",
+  "bienvenidaEN": "Same in English, dark and artistic tone, max 3 paragraphs.",
+  "ausencia": "Mensaje de ausencia en español e inglés, tono artístico.",
+  "rapidas": "3 respuestas rápidas: 1) Colecciones y precios, 2) Talles y pedidos, 3) Pagos y envíos."
+}`;
+          try {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+            });
+            const data = await res.json();
+            const text = data.content?.[0]?.text || '';
+            this.waResultados = JSON.parse(text.replace(/\`\`\`json|\`\`\`/g, '').trim());
+            localStorage.setItem('manny_wa_config', JSON.stringify(this.waConfig));
+            this.$nextTick(() => lucide.createIcons());
+          } catch(e) { this.waError = 'Error: ' + e.message; }
+          this.waGenerando = false;
+        },
+        copiarTexto(texto) { navigator.clipboard.writeText(texto).then(() => alert('¡Copiado!')); },
+
+        exportConfig() {
+          const c = `const STORE_CONFIG = ${JSON.stringify(this.store, null, 2)};\nif (typeof module !== 'undefined' && module.exports) { module.exports = STORE_CONFIG; } else { window.STORE_CONFIG = STORE_CONFIG; }\n`;
+          this.dl('config.js', c);
+        },
+        exportProducts() {
+          const c = `const PRODUCTS_DATA = ${JSON.stringify(this.products, null, 2)};\nif (typeof module !== 'undefined' && module.exports) { module.exports = PRODUCTS_DATA; } else { window.PRODUCTS_DATA = PRODUCTS_DATA; }\n`;
+          this.dl('products.js', c);
+        },
+        dl(name, content) {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([content], { type: 'text/javascript' }));
+          a.download = name; a.click();
+        }
+      };
+    }
+  </script>
+</body>
+</html>
