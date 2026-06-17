@@ -14,8 +14,8 @@
 <script src="config.js"></script>
 <script src="products.js"></script>
 <script>
-  const SUPABASE_URL = 'https://erjrvwrqujuzmxtkhvrw.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_o2woVUsiumTBfeHTIuJlEQ_l1k57h0R';
+  const SUPABASE_URL = 'https://tijfounmgknzejdlmymw.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_35hx6BdVzYh1oTAiZSXJ1w_ebGfdMdB';
   const TIENDA_ID = 'manny';
 
   async function sbFetch(path, options = {}) {
@@ -752,8 +752,12 @@
         waResultados: null, waGenerando: false, waError: null,
 
         async init() {
+          const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
           try {
-            const [cfgRemoto, prodsRemoto] = await Promise.all([sbCargarConfig(), sbCargarProductos()]);
+            const [cfgRemoto, prodsRemoto] = await Promise.race([
+              Promise.all([sbCargarConfig(), sbCargarProductos()]),
+              timeout.then(() => { throw new Error('timeout'); })
+            ]);
             this.store = cfgRemoto || JSON.parse(localStorage.getItem('manny_config') || 'null') || JSON.parse(JSON.stringify(window.STORE_CONFIG || {}));
             this.products = prodsRemoto.length > 0 ? prodsRemoto : JSON.parse(localStorage.getItem('manny_products') || 'null') || JSON.parse(JSON.stringify(window.PRODUCTS_DATA || []));
           } catch(e) {
