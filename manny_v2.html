@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MANNY — Art Wear</title>
+<title>MANNY CHINO — Art Wear</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -181,7 +181,7 @@
 <div x-show="cargando" class="fixed inset-0 z-[100] flex items-center justify-center" style="background:#0A0A0A">
   <div class="text-center">
     <div class="w-12 h-12 border-4 border-mGold/20 border-t-mGold rounded-full animate-spin mx-auto mb-4"></div>
-    <p class="font-display text-mGold tracking-widest text-sm">MANNY</p>
+    <p class="font-display text-mGold tracking-widest text-sm">MANNY CHINO</p>
   </div>
 </div>
 
@@ -203,7 +203,7 @@
 <div class="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm md:hidden" x-show="mobileMenu" @click="mobileMenu = false" x-transition.opacity></div>
 <div class="mobile-slide fixed right-0 top-0 h-full w-72 z-[80] flex flex-col p-8 md:hidden" style="background:#141414; border-left:1px solid rgba(201,168,76,0.1);" :class="mobileMenu ? 'open' : ''">
   <div class="flex justify-between items-center mb-10">
-    <span class="font-display text-mGold tracking-widest">MANNY</span>
+    <span class="font-display text-mGold tracking-widest">MANNY CHINO</span>
     <button @click="mobileMenu = false" aria-label="Cerrar"><i data-lucide="x" class="w-5 h-5 text-mMuted"></i></button>
   </div>
   <nav class="flex flex-col gap-6 text-xs font-cinzel tracking-widest uppercase text-mMuted">
@@ -220,7 +220,7 @@
   <!-- ===== NAV ===== -->
   <nav class="fixed top-0 inset-x-0 z-40 smooth" :class="scrolled ? 'bg-mPrimary/95 backdrop-blur-md border-b border-white/5' : 'bg-transparent'">
     <div class="max-w-6xl mx-auto px-5 sm:px-8 flex items-center justify-between h-18 py-4">
-      <a href="#inicio" class="flex items-center gap-2"><span class="font-display text-xl sm:text-2xl tracking-widest gold-text">MANNY</span><span class="font-cinzel text-mGold/50 text-xs tracking-[0.3em] hidden sm:inline">· El Chino ·</span></a>
+      <a href="#inicio" class="flex items-center gap-2"><span class="font-display text-xl sm:text-2xl tracking-widest gold-text">MANNY CHINO</span></a>
       <div class="hidden md:flex items-center gap-8 text-xs font-cinzel tracking-widest text-mMuted uppercase">
         <a href="#colecciones" class="hover:text-mGold smooth">Colecciones</a>
         <a href="#proceso" class="hover:text-mGold smooth">El Proceso</a>
@@ -258,7 +258,7 @@
     <!-- Logo SVG central -->
     <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-[0.04]">
       <svg viewBox="0 0 600 200" class="w-full max-w-4xl px-8">
-        <text x="50%" y="75%" text-anchor="middle" font-family="Cinzel Decorative" font-size="120" font-weight="900" fill="#C9A84C" letter-spacing="20">MANNY</text>
+        <text x="50%" y="75%" text-anchor="middle" font-family="Cinzel Decorative" font-size="80" font-weight="900" fill="#C9A84C" letter-spacing="12">MANNY CHINO</text>
       </svg>
     </div>
 
@@ -278,8 +278,7 @@
           <path d="M32.5 32.5 C32.5 32.5 27 27 26 24 C29 23 32.5 32.5 32.5 32.5Z" fill="currentColor" opacity="0.5"/>
         </svg>
 
-        <h1 class="font-display text-6xl sm:text-8xl lg:text-[10rem] leading-none tracking-[0.15em] gold-text">MANNY</h1>
-        <p class="font-cinzel text-mGold/60 text-xs sm:text-sm tracking-[0.6em] uppercase mt-2">✦ El Chino ✦</p>
+        <h1 class="font-display text-5xl sm:text-7xl lg:text-9xl leading-none tracking-[0.12em] gold-text">MANNY CHINO</h1>
         <div class="gold-line w-48 mx-auto my-4"></div>
         <p class="font-cinzel text-mCream/70 text-sm sm:text-base tracking-[0.4em] uppercase">Art Wear · San Pedro de Macorís</p>
       </div>
@@ -562,7 +561,7 @@
   <!-- Footer -->
   <footer class="bg-mSurface border-t border-white/5 py-10">
     <div class="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-mMuted font-cinzel tracking-widest">
-      <span class="gold-text font-display text-lg">MANNY <span class="font-cinzel text-mGold/50 text-sm tracking-widest">· El Chino ·</span></span>
+      <span class="gold-text font-display text-lg">MANNY CHINO</span>
       <span x-text="store.address"></span>
       <div class="flex items-center gap-4">
         <button @click="adminOpen = true" class="opacity-30 hover:opacity-60 smooth flex items-center gap-1.5"><i data-lucide="settings" class="w-3.5 h-3.5"></i> Panel</button>
@@ -633,7 +632,7 @@
   <div x-show="adminOpen" x-transition.opacity class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm" @click.self="adminOpen = false">
     <div x-show="adminOpen" x-transition class="absolute right-0 top-0 h-full w-full max-w-xl bg-mSurface border-l border-white/5 flex flex-col">
       <div class="flex items-center justify-between p-5 border-b border-white/5">
-        <h3 class="font-cinzel text-mText flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-mGold"></i> Panel MANNY</h3>
+        <h3 class="font-cinzel text-mText flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-mGold"></i> Panel MANNY CHINO</h3>
         <div class="flex items-center gap-2">
           <button x-show="isLogged" @click="logout()" class="text-xs font-cinzel text-mMuted hover:text-red-500 flex items-center gap-1.5 smooth"><i data-lucide="log-out" class="w-4 h-4"></i> Salir</button>
           <button @click="adminOpen = false" class="p-2 hover:bg-white/5 rounded-lg smooth"><i data-lucide="x" class="w-5 h-5 text-mMuted"></i></button>
@@ -680,6 +679,17 @@
                 <label class="flex items-center gap-2 text-sm text-mText cursor-pointer font-cinzel tracking-widest text-xs uppercase">
                   <input type="checkbox" x-model="editingProduct.featured" class="w-4 h-4 rounded accent-mGold"> Destacada
                 </label>
+                <div>
+                  <p class="text-[10px] font-cinzel text-mMuted uppercase tracking-widest mb-1.5">Foto del diseño</p>
+                  <div class="flex items-center gap-3">
+                    <img x-show="editingProduct.image" :src="editingProduct.image" class="w-16 h-16 rounded-xl object-cover bg-mSurface flex-shrink-0">
+                    <label class="flex-1 cursor-pointer border border-dashed border-mGold/30 hover:border-mGold/60 rounded-xl px-3 py-3 text-center smooth">
+                      <i data-lucide="upload" class="w-4 h-4 inline text-mGold/50"></i>
+                      <span class="text-[11px] font-cinzel text-mMuted ml-1" x-text="editingProduct.image ? 'Cambiar foto' : 'Subir foto'"></span>
+                      <input type="file" accept="image/*" class="hidden" @change="handleProductImage($event)">
+                    </label>
+                  </div>
+                </div>
                 <div class="flex gap-2 pt-1">
                   <button @click="saveProduct()" class="flex-1 bg-mGold hover:bg-mCream text-mPrimary py-2.5 rounded-xl text-xs font-cinzel tracking-widest uppercase smooth">Guardar</button>
                   <button @click="editingProduct = null" class="px-4 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-cinzel tracking-widest uppercase smooth">Cancelar</button>
@@ -728,10 +738,12 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <script>
     function mannyApp() {
       return {
+        _sb: null,
         store: {}, products: [],
         scrolled: false,
         selectedProduct: null,
@@ -752,6 +764,7 @@
         waResultados: null, waGenerando: false, waError: null,
 
         async init() {
+          this._sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
           const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
           try {
             const [cfgRemoto, prodsRemoto] = await Promise.race([
@@ -775,6 +788,35 @@
           this.$nextTick(() => { lucide.createIcons(); this.setupReveal(); });
         },
 
+        async compressImage(file, maxWidth = 900, quality = 0.82) {
+          return new Promise((resolve, reject) => {
+            const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+            img.onload = () => {
+              const ratio = Math.min(maxWidth / img.width, 1);
+              const canvas = document.createElement('canvas');
+              canvas.width  = Math.round(img.width  * ratio);
+              canvas.height = Math.round(img.height * ratio);
+              canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+              canvas.toBlob(blob => {
+                URL.revokeObjectURL(objectUrl);
+                blob ? resolve(blob) : reject(new Error('Canvas toBlob falló'));
+              }, 'image/webp', quality);
+            };
+            img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Error cargando imagen')); };
+            img.src = objectUrl;
+          });
+        },
+        async uploadToStorage(file, folder = TIENDA_ID) {
+          const blob = await this.compressImage(file);
+          const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.webp`;
+          const { data, error } = await this._sb.storage.from('tienda-images').upload(path, blob, {
+            contentType: 'image/webp', upsert: false
+          });
+          if (error) throw error;
+          const { data: { publicUrl } } = this._sb.storage.from('tienda-images').getPublicUrl(data.path);
+          return publicUrl;
+        },
         setupReveal() {
           const obs = new IntersectionObserver((entries) => {
             entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
@@ -805,7 +847,7 @@
         },
 
         orderProduct(product) {
-          const text = `*Pedido - MANNY Art Wear*\n\nRemera: ${product.name}\nColección: ${this.collectionName(product.collection)}\nAcabado: ${product.hasBrillo ? '✦ Con piedras brillantes' : 'Arte puro'}\n\nQuiero saber disponibilidad y precio!`;
+          const text = `*Pedido - MANNY CHINO Art Wear*\n\nRemera: ${product.name}\nColección: ${this.collectionName(product.collection)}\nAcabado: ${product.hasBrillo ? '✦ Con piedras brillantes' : 'Arte puro'}\n\nQuiero saber disponibilidad y precio!`;
           window.open(this.waLink(text), '_blank');
           this.selectedProduct = null;
         },
@@ -833,6 +875,15 @@
           this.persistConfig(); alert('Guardado!');
         },
 
+        async handleProductImage(e) {
+          const file = e.target.files[0]; if (!file) return;
+          try {
+            this.editingProduct.image = await this.uploadToStorage(file);
+          } catch(err) {
+            console.error('Error subiendo imagen:', err);
+            alert('No se pudo subir la foto. Verificá tu conexión.');
+          }
+        },
         newProduct() {
           this.editingProduct = { id: null, name: '', description: '', collection: '', color: 'Negro', hasBrillo: false, featured: false, sizes: ['S','M','L','XL'], inStock: true, image: '' };
           this.$nextTick(() => lucide.createIcons());
@@ -859,18 +910,18 @@
         },
 
         async persistConfig() {
-          localStorage.setItem('manny_config', JSON.stringify(this.store));
+          try { localStorage.setItem('manny_config', JSON.stringify(this.store)); } catch(e) { console.warn('localStorage config lleno:', e); }
           try { await sbGuardarConfig(this.store); } catch(e) { console.warn('Supabase config:', e); }
         },
         async persistProducts() {
-          localStorage.setItem('manny_products', JSON.stringify(this.products));
+          try { localStorage.setItem('manny_products', JSON.stringify(this.products)); } catch(e) { console.warn('localStorage products lleno:', e); }
           try { await sbGuardarProductos(this.products); } catch(e) { console.warn('Supabase products:', e); }
         },
 
         async generarRespuestasWA() {
           if (!this.waConfig.servicios.trim()) { alert('Completá al menos los servicios.'); return; }
           this.waGenerando = true; this.waError = null; this.waResultados = null;
-          const prompt = `Sos el asistente de MANNY Art Wear, una marca de remeras oversize con diseños artísticos únicos en San Pedro de Macorís, República Dominicana.
+          const prompt = `Sos el asistente de MANNY CHINO Art Wear, una marca de remeras oversize con diseños artísticos únicos en San Pedro de Macorís, República Dominicana.
 
 Info:
 - Productos: ${this.waConfig.servicios}
